@@ -94,9 +94,23 @@ class Sintatica:
     def p_tipo(self, p):
         '''
         tipo : INTEIRO
-               | FLUTUANTE
         '''
-        p[0] = Tree('tipo')
+
+        p[0] = Tree('inteiro')
+
+    def p_tipo1(self, p):
+        '''
+        tipo : FLUTUANTE
+        '''
+
+        p[0] = Tree('flutuante')
+
+    def p_tipo2(self, p):
+        '''
+        tipo : NUM_CIENTIFICA
+        '''
+
+        p[0] = Tree('cientifico')
 
     def p_declaracao_funcao(self, p):
         '''
@@ -274,7 +288,7 @@ class Sintatica:
 
     def p_fator(self, p):
         '''
-        fator : RPAREN expressao LPAREN
+        fator : LPAREN expressao RPAREN
                 | var
                 | chamada_funcao
                 | numero
@@ -320,7 +334,7 @@ class Sintatica:
             print("Erro sintático: '%s', linha %d" % (p.value, p.lineno))
             exit(1)
         else:
-            yacc.restart()
+            #yacc.restart()
             print('Erro sintático: definições incompletas!')
             exit(1)
 
@@ -331,7 +345,15 @@ def print_tree(node, level="->"):
             print_tree(son, level+"->")
 
 if __name__ == '__main__':
-    codigo = open('C:/Users/Mateu/Desktop/UTFPR-BCC/Compiladores/sintatica-testes/somavet.tpp')
+    codigo = open('C:/Users/Mateu/Desktop/UTFPR-BCC/Compiladores/semantica-testes/sema-001.tpp')
     r = codigo.read()
     f = Sintatica(r)
     print_tree(f.ast)
+
+    '''
+    import sys
+    codigo = open(sys.argv[1])
+    r = codigo.read()
+    f = Sintatica(r)
+    print_tree(f.ast)
+    '''

@@ -40,8 +40,6 @@ class Lexica(object):
         'ATRIBUICAO',
         'ELOGICO',
         'DIF',
-        'PR',
-        'SB',
         'ID',
         'NUM_FLUTUANTE',
         'COMENTARIO',
@@ -144,14 +142,16 @@ class Lexica(object):
 
 # Tokenize
 if __name__ == '__main__':
-    #Instancia a classe e retorna os tokens
-    import sys
-    codigo = open('C:/Users/Mateu/Desktop/UTFPR-BCC/Compiladores/lexica-testes/fat.tpp')#Abre o arquivo com o caminho atraves de argv[1] *é recomendavel o arquivo estar codificade em ANSI
+    codigo = open('C:/Users/Mateu/Desktop/UTFPR-BCC/Compiladores/lexica-testes/fat.tpp')
     r = codigo.read()
     lexerTest = Lexica()
     lexerTest.build()
-    lexerTest.lexer.input(r)#Carrega os dados
-    while True:#Percorre o arquivo e imprime os tokens
+
+    # Carrega os dados
+    lexerTest.lexer.input(r)
+
+    # Percorre o arquivo e imprime os tokens
+    while True:
         tok = lexerTest.lexer.token()
         if not tok:
             break
