@@ -1,0 +1,122 @@
+##sema-001##
+ERRO: funcao principal nao foi declarada
+WARNING: variavel a nunca é utilizada
+WARNING: variavel b nunca é utilizada
+
+##sema-002##
+ERRO: aceita-se apenas valor do tipo inteiro
+WARNING: a funcao 'principal' retorna 'void' e deveria retornar 'inteiro'
+WARNING: variavel a nunca é utilizada
+WARNING: variavel b nunca é utilizada
+
+##sema-003##
+ERRO: funcao func nao foi declarada
+
+##sema-004##
+WARNING: a funcao 'principal' retorna 'void' e deveria retornar 'inteiro'
+WARNING: variavel b nunca é utilizada
+['variavel', 'a', True, True, 'inteiro', 'global']
+['variavel', 'b', False, False, 'inteiro', 'global']
+['funcao', 'principal', 'void', False, 'inteiro']
+
+##sema-005##
+ERRO: argumentos invalidos. Espera-se 2 e foi passado 1
+WARNING: a funcao 'principal' retorna 'void' e deveria retornar 'inteiro'
+
+##sema-006##
+ERRO: variavel c sem atribuicao
+WARNING: tipo inteiro é diferente de flutuante var b
+WARNING: tipo flutuante é diferente de inteiro var a
+WARNING: a funcao 'principal' retorna 'void' e deveria retornar 'inteiro'
+
+##sema-007##
+ERRO: variavel 'a' já foi declarada
+ERRO: variavel a sem atribuicao
+WARNING: a funcao 'principal' retorna 'void' e deveria retornar 'inteiro'
+WARNING: variavel a nunca é utilizada
+
+##sema-008##
+ERRO: variavel a nao foi declarada
+
+##sema-009##
+WARNING: a funcao 'principal' retorna 'void' e deveria retornar 'inteiro'
+WARNING: variavel a nunca é utilizada
+WARNING: variavel c da funcao principal nunca é utilizada
+['variavel', 'a', False, False, 'flutuante', 'global']
+['funcao', 'principal', 'void', False, 'inteiro']
+['variavel', 'b', True, True, 'flutuante', 'principal']
+['variavel', 'c', False, False, 'inteiro', 'principal']
+
+##sema-010##
+ERRO: variavel a sem atribuicao
+WARNING: a funcao 'principal' retorna 'void' e deveria retornar 'inteiro'
+
+##sema-011##
+WARNING: tipo flutuante é diferente de inteiro var a
+WARNING: tipo inteiro é diferente de flutuante var b
+WARNING: a funcao 'principal' retorna 'void' e deveria retornar 'inteiro'
+['variavel', 'a', True, True, 'flutuante', 'global']
+['variavel', 'b', True, True, 'inteiro', 'global']
+['funcao', 'principal', 'void', False, 'inteiro']
+
+##sema-012##
+ERRO: variavel c nao foi declarada
+
+##sema-013##
+WARNING: tipo flutuante é diferente de inteiro var a
+ERRO: chamada da funcao principal na funcao func
+
+##sema-014##
+WARNING: tipo flutuante é diferente de inteiro var a
+ERRO: a funcao func retorna flutuante e deveria retornar inteiro
+WARNING: chamada recursiva para a funcao principal
+WARNING: a funcao func nunca é utilizada 
+
+##sema-015##
+WARNING: tipo flutuante é diferente de inteiro var a
+ERRO: a funcao func retorna flutuante e deveria retornar inteiro
+WARNING: chamada recursiva para a funcao principal
+WARNING: a funcao func nunca é utilizada 
+
+##sema-016##
+WARNING: tipo flutuante é diferente de inteiro var a
+ERRO: a funcao func retorna flutuante e deveria retornar inteiro
+WARNING: a funcao 'principal' retorna 'void' e deveria retornar 'inteiro'
+WARNING: a funcao func nunca é utilizada 
+
+##sema-017##
+ERRO: a funcao func retorna flutuante e deveria retornar inteiro
+WARNING: a funcao 'principal' retorna 'void' e deveria retornar 'inteiro'
+
+##sema-018##
+ERRO: a funcao func retorna flutuante e deveria retornar void
+WARNING: a funcao 'principal' retorna 'void' e deveria retornar 'inteiro'
+
+##sema-019##
+WARNING: tipo flutuante é diferente de inteiro var m
+ERRO: a funcao fatorial retorna flutuante e deveria retornar inteiro
+WARNING: a funcao 'principal' retorna 'void' e deveria retornar 'inteiro'
+WARNING: tipo flutuante é diferente de inteiro var b
+WARNING: variavel n nunca é utilizada
+WARNING: variavel x nunca é utilizada
+WARNING: variavel y nunca é utilizada
+WARNING: variavel p da funcao fatorial nunca é utilizada
+WARNING: variavel fat da funcao fatorial2 nunca é utilizada
+WARNING: variavel fat2 da funcao fatorial2 nunca é utilizada
+WARNING: variavel fat3 da funcao fatorial2 nunca é utilizada
+WARNING: a funcao fatorial2 nunca é utilizada 
+['variavel', 'n', False, False, 'inteiro', 'global']
+['variavel', 'x', False, False, 'flutuante', 'global']
+['variavel', 'y', False, False, 'flutuante', 'global']
+['variavel', 'z', True, True, 'flutuante', 'global']
+['funcao', 'fatorial', ['inteiro', 'flutuante'], True, 'inteiro']
+['variavel', 'n', True, True, 'inteiro', 'fatorial']
+['variavel', 'm', True, True, 'flutuante', 'fatorial']
+['variavel', 'p', False, False, 'flutuante', 'fatorial']
+['funcao', 'principal', 'void', False, 'inteiro']
+['variavel', 'a', True, True, 'inteiro', 'global']
+['variavel', 'b', True, True, 'flutuante', 'global']
+['funcao', 'fatorial2', ['inteiro', 'flutuante', 'inteiro'], False, 'inteiro']
+['variavel', 'fat', False, True, 'inteiro', 'fatorial2']
+['variavel', 'fat2', False, True, 'flutuante', 'fatorial2']
+['variavel', 'fat3', False, True, 'inteiro', 'fatorial2']

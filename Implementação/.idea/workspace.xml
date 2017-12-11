@@ -14,8 +14,8 @@
       <file leaf-file-name="AnaliseLexica.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Main/AnaliseLexica.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="680">
-              <caret line="41" column="14" lean-forward="false" selection-start-line="41" selection-start-column="14" selection-end-line="41" selection-end-column="14" />
+            <state relative-caret-position="1870">
+              <caret line="111" column="16" lean-forward="false" selection-start-line="111" selection-start-column="16" selection-end-line="111" selection-end-column="16" />
               <folding>
                 <element signature="e#15#36#0" expanded="true" />
               </folding>
@@ -26,8 +26,8 @@
       <file leaf-file-name="AnaliseSintatica.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Main/AnaliseSintatica.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="69">
-              <caret line="347" column="90" lean-forward="false" selection-start-line="347" selection-start-column="90" selection-end-line="347" selection-end-column="90" />
+            <state relative-caret-position="3026">
+              <caret line="179" column="45" lean-forward="false" selection-start-line="179" selection-start-column="40" selection-end-line="179" selection-end-column="45" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
               </folding>
@@ -35,33 +35,33 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AnaliseSemantica.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="AnaliseSemantica.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Main/AnaliseSemantica.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="159">
-              <caret line="492" column="37" lean-forward="true" selection-start-line="492" selection-start-column="37" selection-end-line="492" selection-end-column="37" />
+            <state relative-caret-position="183">
+              <caret line="522" column="98" lean-forward="false" selection-start-line="522" selection-start-column="98" selection-end-line="522" selection-end-column="98" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Semantica.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../../../../Semantica.py">
+      <file leaf-file-name="GenCodigo.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Main/GenCodigo.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="272">
-              <caret line="17" column="0" lean-forward="true" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
+            <state relative-caret-position="2532">
+              <caret line="466" column="98" lean-forward="false" selection-start-line="466" selection-start-column="98" selection-end-line="466" selection-end-column="98" />
               <folding>
-                <element signature="e#86#114#0" expanded="true" />
+                <element signature="e#0#23#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="semantica (1).py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../../../../semantica (1).py">
+      <file leaf-file-name="instructions.py" pinned="false" current-in-tab="false">
+        <entry file="file://C:/Program Files/Anaconda3/Lib/site-packages/llvmlite/ir/instructions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="93">
+              <caret line="200" column="0" lean-forward="false" selection-start-line="200" selection-start-column="0" selection-end-line="200" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -78,24 +78,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>digi</find>
-      <find>cient</find>
-      <find>intei</find>
-      <find>variavel</find>
-      <find>nao foi</find>
-      <find>[2]</find>
-      <find>atribu</find>
-      <find>nao foi de</find>
-      <find>a funcao</find>
-      <find>declarada</find>
-      <find>argumentos in</find>
-      <find>nao foi decla</find>
-      <find>global</find>
-      <find>espera-se</find>
-      <find>atribui</find>
-      <find>expressao_simples</find>
-      <find>funcao prin</find>
-      <find>exit</find>
+      <find>parametro</find>
+      <find>var</find>
+      <find>indice</find>
+      <find>globalvari</find>
+      <find>chamada</find>
+      <find>lista_argumentos</find>
+      <find>chamada_funcao</find>
+      <find>func</find>
+      <find>lista_pa</find>
+      <find>lista_va</find>
+      <find>declaracao</find>
+      <find>senao</find>
+      <find>lista_var</find>
+      <find>expres</find>
+      <find>acao</find>
+      <find>declaracao_fun</find>
+      <find>retorn</find>
+      <find>aditiva</find>
+      <find>fator</find>
+      <find>store</find>
+      <find>ret</find>
+      <find>funcao</find>
+      <find>declaracao_fu</find>
+      <find>atribuica</find>
+      <find>tipo</find>
+      <find>tipo(se</find>
+      <find>expressa</find>
+      <find>declaracao_var</find>
+      <find>symbols</find>
+      <find>atribuicao</find>
     </findStrings>
   </component>
   <component name="IdeDocumentHistory">
@@ -111,14 +123,14 @@
         <option value="$PROJECT_DIR$/Main/AnaliseLexica.py" />
         <option value="$PROJECT_DIR$/Main/AnaliseSintatica.py" />
         <option value="$PROJECT_DIR$/Main/AnaliseSemantica.py" />
+        <option value="$PROJECT_DIR$/Main/GenCodigo.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="752" />
-    <option name="y" value="20" />
-    <option name="width" value="598" />
-    <option name="height" value="688" />
+    <option name="x" value="676" />
+    <option name="width" value="697" />
+    <option name="height" value="735" />
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1">
@@ -135,8 +147,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="Scratches" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -177,7 +189,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.AnaliseSemantica">
+  <component name="RunManager" selected="Python.GenCodigo">
     <configuration name="AnaliseLexica (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -246,37 +258,37 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
     </configuration>
-    <configuration name="parser" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="GenCodigo" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Teste" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Main" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="Compiladores" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Teste/parser.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Main/GenCodigo.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
     </configuration>
     <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="Python.parser" />
-      <item index="1" class="java.lang.String" itemvalue="Python.AnaliseSintatica" />
-      <item index="2" class="java.lang.String" itemvalue="Python.AnaliseLexica (1)" />
-      <item index="3" class="java.lang.String" itemvalue="Python.AnaliseSintatica (1)" />
-      <item index="4" class="java.lang.String" itemvalue="Python.AnaliseSemantica" />
+      <item index="0" class="java.lang.String" itemvalue="Python.AnaliseSintatica" />
+      <item index="1" class="java.lang.String" itemvalue="Python.AnaliseLexica (1)" />
+      <item index="2" class="java.lang.String" itemvalue="Python.AnaliseSintatica (1)" />
+      <item index="3" class="java.lang.String" itemvalue="Python.AnaliseSemantica" />
+      <item index="4" class="java.lang.String" itemvalue="Python.GenCodigo" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.AnaliseSemantica" />
-        <item index="1" class="java.lang.String" itemvalue="Python.AnaliseSintatica (1)" />
-        <item index="2" class="java.lang.String" itemvalue="Python.AnaliseLexica (1)" />
-        <item index="3" class="java.lang.String" itemvalue="Python.AnaliseSintatica" />
-        <item index="4" class="java.lang.String" itemvalue="Python.parser" />
+        <item index="0" class="java.lang.String" itemvalue="Python.GenCodigo" />
+        <item index="1" class="java.lang.String" itemvalue="Python.AnaliseSemantica" />
+        <item index="2" class="java.lang.String" itemvalue="Python.AnaliseSintatica (1)" />
+        <item index="3" class="java.lang.String" itemvalue="Python.AnaliseLexica (1)" />
+        <item index="4" class="java.lang.String" itemvalue="Python.AnaliseSintatica" />
       </list>
     </recent_temporary>
   </component>
@@ -293,18 +305,27 @@
     </task>
     <servers />
   </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22401172" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21669106" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3169572" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4786054" sideWeight="0.50292826" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.28209192" sideWeight="0.49707174" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.50237715" sideWeight="0.49707174" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3296355" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.34210527" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -322,41 +343,11 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="11" />
+      <option name="time" value="12" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/Main/AnaliseSintatica.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5525">
-          <caret line="326" column="30" lean-forward="false" selection-start-line="326" selection-start-column="30" selection-end-line="326" selection-end-column="30" />
-          <folding>
-            <element signature="e#0#20#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Main/AnaliseLexica.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2533">
-          <caret line="150" column="22" lean-forward="false" selection-start-line="150" selection-start-column="22" selection-end-line="150" selection-end-column="22" />
-          <folding>
-            <element signature="e#15#36#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Main/AnaliseSintatica.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5525">
-          <caret line="326" column="30" lean-forward="false" selection-start-line="326" selection-start-column="30" selection-end-line="326" selection-end-column="30" />
-          <folding>
-            <element signature="e#0#20#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Main/AnaliseLexica.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -598,49 +589,58 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../../../semantica (1).py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../../Semantica.py" />
+    <entry file="file://$PROJECT_DIR$/../../../../semantica (1).py" />
     <entry file="file://$PROJECT_DIR$/Main/AnaliseLexica.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="680">
-          <caret line="41" column="14" lean-forward="false" selection-start-line="41" selection-start-column="14" selection-end-line="41" selection-end-column="14" />
+        <state relative-caret-position="1870">
+          <caret line="111" column="16" lean-forward="false" selection-start-line="111" selection-start-column="16" selection-end-line="111" selection-end-column="16" />
           <folding>
             <element signature="e#15#36#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../../../Semantica.py">
+    <entry file="file://$PROJECT_DIR$/../../../../Automato.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="17" column="0" lean-forward="true" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
-          <folding>
-            <element signature="e#86#114#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="-2193">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Main/AnaliseSintatica.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="69">
-          <caret line="347" column="90" lean-forward="false" selection-start-line="347" selection-start-column="90" selection-end-line="347" selection-end-column="90" />
+        <state relative-caret-position="3026">
+          <caret line="179" column="45" lean-forward="false" selection-start-line="179" selection-start-column="40" selection-end-line="179" selection-end-column="45" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://C:/Program Files/Anaconda3/Lib/site-packages/llvmlite/ir/instructions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="93">
+          <caret line="200" column="0" lean-forward="false" selection-start-line="200" selection-start-column="0" selection-end-line="200" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/Main/AnaliseSemantica.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="159">
-          <caret line="492" column="37" lean-forward="true" selection-start-line="492" selection-start-column="37" selection-end-line="492" selection-end-column="37" />
+        <state relative-caret-position="183">
+          <caret line="522" column="98" lean-forward="false" selection-start-line="522" selection-start-column="98" selection-end-line="522" selection-end-column="98" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Main/GenCodigo.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2532">
+          <caret line="466" column="98" lean-forward="false" selection-start-line="466" selection-start-column="98" selection-end-line="466" selection-end-column="98" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

@@ -1,55 +1,20 @@
-# -*- coding: utf-8 -*-
+from llvmlite import ir
 from Main.AnaliseSintatica import Sintatica
+from Main.AnaliseSemantica import Semantica
 
-class Semantica:
-
+class GenCode:
     def __init__(self, code):
-        self.symbols = {}
-        self.scope = "global"
         self.tree = Sintatica(code).ast
+        self.module = ir.Module('program')
+        self.symbols = Semantica(code).symbols
+        self.scope = "global"
+        self.builder = None
+        self.func = None
         self.programa(self.tree)
-        self.verify_main(self.symbols)
-        self.var_used(self.symbols)
-        self.func_used(self.symbols)
 
-    '''
-    Função que verifica se existe a main
-    '''
-    def verify_main(self, symbols):
-        if "principal" not in symbols.keys():
-            print("ERRO: funcao principal nao foi declarada")
-
-    '''
-    Função que verifica se alguma variável não está sendo utilizada
-    '''
-    def var_used(self, symbols):
-        for key, values in symbols.items():
-            if values[0] == "variavel":
-                if values[2] is False:
-                    scope = key.split("-")
-                    if scope[0] != "global":
-                        print("WARNING: variavel " + values[1] + " da funcao " + scope[0] + " nunca é utilizada")
-                    else:
-                        print("WARNING: variavel " + values[1] + " nunca é utilizada")
-
-    '''
-    Função que verifica se alguma função não está sendo utilizada
-    '''
-    def func_used(self, symbols):
-        for (key, values) in symbols.items():
-            if values[0] == "funcao" and key != "principal":
-                if values[3] is False:
-                    print("WARNING: a funcao " + key + " nunca é utilizada ")
-
-    '''
-    Start
-    '''
     def programa(self, node):
         self.lista_declaracoes(node.child[0])
 
-    '''
-    Diferenciação pelo tamanho
-    '''
     def lista_declaracoes(self, node):
         if len(node.child) == 1:
             self.declaracao(node.child[0])
@@ -57,9 +22,6 @@ class Semantica:
             self.lista_declaracoes(node.child[0])
             self.declaracao(node.child[1])
 
-    '''
-    Diferenciação pelo tipo, pois os tamanhos são iguais
-    '''
     def declaracao(self, node):
         if node.child[0].type == "declaracao_variaveis":
             self.declaracao_variaveis(node.child[0])
@@ -74,14 +36,10 @@ class Semantica:
             self.declaracao_funcao(node.child[0])
             self.scope = "global"
 
-    '''
-    Verifica se a variável tem colchete, ou seja, se é vetor, e depois verifica se ja foi declarado e adiciona
-    na tabela de símbolos
-    '''
     def declaracao_variaveis(self, node):
         var_type = node.child[0].type
         var_name = ""
-        var_remaining = "" #restante
+        var_r = ""  # restante
         i = 0
 
         for son in self.lista_variaveis(node.child[1]):
@@ -90,28 +48,38 @@ class Semantica:
                     if son[i] == "[":
                         break
                     var_name += son[i]
-                var_remaining = son[i:]
+                var_r = son[i:]
                 son = var_name
+            if self.scope == "global":
+                if var_type == "inteiro":
+                    var = ir.GlobalVariable(self.module, ir.IntType(32), son)
+                    var.initializer = ir.Constant(ir.IntType(32), 0)
+                    var.linkage = "common"
+                    var.align = 4
+                if var_type == "flutuante":
+                    var = ir.GlobalVariable(self.module, ir.FloatType(), son)
+                    var.initializer = ir.Constant(ir.FloatType(), 0)
+                    var.linkage = "common"
+                    var.align = 4
+            else:
+                if var_type == "inteiro":
+                    var = self.builder.alloca(ir.IntType(32), name=son)
+                    var.align = 4
+                    num1 = ir.Constant(ir.IntType(32), 0)
+                    self.builder.store(num1, var)
+                if var_type == "flutuante":
+                    var = self.builder.alloca(ir.FloatType(), name=son)
+                    var.align = 4
+                    num1 = ir.Constant(ir.FloatType(), 0)
+                    self.builder.store(num1, var)
 
-            if self.scope + "-" + son in self.symbols.keys():
-                print("ERRO: variavel '" + son + "' já foi declarada")
-                exit(1)
-
-            if "global" + "-" + son in self.symbols.keys():
-                print("ERRO: variavel '" + son + "' já foi declarada")
-
-            if son in self.symbols.keys():
-                print("WARNING: funcoes com nomes iguais: " + node.value)
-                                                    #classe, nome variavel, utilizacao, atribuicao, tipo, escopo
-            self.symbols[self.scope + "-" + son] = ["variavel", son, False, False, var_type + var_remaining, self.scope]
+            self.symbols[self.scope + "-" + son] = ["variavel", son, False, False, var_type + var_r, self.scope, var]
 
     def inicializacao_variaveis(self, node):
         self.atribuicao(node.child[0])
 
-    '''
-    Cria uma lista de variáveis
-    '''
     def lista_variaveis(self, node):
+        print("bbbbbbbbbb")
         list_var = []
         if len(node.child) == 1:
             if len(node.child[0].child) == 1:
@@ -120,15 +88,18 @@ class Semantica:
                 list_var.append(node.child[0].value)
 
             return list_var
+
         else:
             list_var = self.lista_variaveis(node.child[0])
-            list_var.append(node.child[1].value)
 
+            if len(node.child[1].child) == 1:
+                list_var.append(node.child[1].value) + self.indice(node.child[1].child[0])
+            else:
+                list_var.append(node.child[1].value)
+
+            print("asf " + list_var)
             return list_var
 
-    '''
-    Verifica se uma variável foi declarada e se não possui atribuição
-    '''
     def var(self, node):
         name_var = self.scope + "-" + node.value
         if name_var not in self.symbols:
@@ -140,13 +111,9 @@ class Semantica:
         if self.symbols[name_var][3] is False:
             print("ERRO: variavel " + node.value + " sem atribuicao")
 
-        self.symbols[name_var][2] = True
-
+        self.symbols[name_var][2] = True  # seta ID com valor utilizado
         return self.symbols[name_var][4]
 
-    '''
-    Verifica o tipo da expressão passado dentro do colchete
-    '''
     def indice(self, node):
         if len(node.child) == 1:
             tipo = self.expressao(node.child[0])
@@ -163,52 +130,86 @@ class Semantica:
             return "[]" + var
 
     def tipo(self, node):
-        if node.type == "inteiro" or node.type == "flutuante":
-            return node.type
+        print("asdfasd")
+        print(node)
+        if node == "inteiro":
+            return ir.IntType(32)
+        elif node == "flutuante":
+            return ir.FloatType()
         else:
-            print("ERRO: tipo " + node.type + "incorreto, espera-se apenas tipos inteiro, flutuante ou cientifico")
+            # Caso type
+            if node.type == "inteiro":
+                return ir.IntType(32)
+            else:
+                return ir.FloatType()
 
-    '''
-    Verifica se alguma função e alguma variável já foi declarada e adiciona a função na tabela de símbolos
-    '''
     def declaracao_funcao(self, node):
         if len(node.child) == 1:
             tipo = "void"
-            if node.child[0].value in self.symbols.keys():
-                print("ERRO: função " + node.child[0].value + " ja foi declarada")
+            if self.symbols[node.child[0].value][2] is None:
+                param = ir.VoidType()
+            else:
+                param = self.symbols[node.child[0].value][2]
+            self.scope = node.child[0].value
+            #tipo_return = ir.VoidType()
+            tipo_param = ()
+            if param != "void":
+                for i in param:
+                    if i == "inteiro":
+                        tipo_param = ir.IntType(32) + tipo_param
+                    if i == "flutuante":
+                        tipo_param = ir.FloatType() + tipo_param
+            tipo_return = ir.VoidType()
+            tipo_func = ir.FunctionType(tipo_return, tipo_param)
+            func = ir.Function(self.module, tipo_func, name=node.child[0].value)
 
-            elif "global" + "-" + node.child[0].value in self.symbols.keys():
-                print("ERRO: variavel " + node.child[0].value + " ja foi declarada")
+            entryBlock = func.append_basic_block('entry')
+            exitBasicBlock = func.append_basic_block('exit')
 
-            self.symbols[node.child[0].value] = ["funcao", node.child[0].value, [], False, tipo]
+            self.builder = ir.IRBuilder(entryBlock)
+            self.symbols[node.child[0].value] = ["funcao", node.child[0].value, [], tipo, 0, self.scope]
             self.cabecalho(node.child[0])
         else:
+            print("ccccc")
             tipo = self.tipo(node.child[0])
+            print(tipo)
+            if self.symbols[node.child[1].value][2] is None:
+                param = ir.VoidType()
+            else:
+                param = self.symbols[node.child[1].value][2]
 
-            self.symbols[node.child[1].value] = ["funcao", node.child[1].value, [], False, tipo]
+            self.scope = node.child[1].value
+            tipo_return = None
+            if tipo == ir.IntType(32):
+
+                tipo_return = ir.IntType(32)
+            if tipo == ir.FloatType():
+                tipo_return = ir.FloatType()
+            tipo_param = ()
+            if param != "void":
+                for i in param:
+                    if i == "inteiro":
+                        tipo_param = ir.IntType(32) + tipo_param
+                    if i == "flutuante":
+                        tipo_param = ir.FloatType() + tipo_param
+
+            #fnReturntipo = return_tipo
+            tipo_func = ir.FunctionType(tipo_return, tipo_param)
+            func = ir.Function(self.module, tipo_func, name=node.child[1].value)
+
+            entryBlock = func.append_basic_block('entry')
+            exitBasicBlock = func.append_basic_block('exit')
+
+            self.builder = ir.IRBuilder(entryBlock)
+            self.symbols[node.child[1].value] = ["funcao", node.child[1].value, [], tipo, 0, self.scope]
             self.cabecalho(node.child[1])
 
-    '''
-    Verifica se o tipo da função condiz com o retorno dela
-    '''
     def cabecalho(self, node):
-        #funcao, nome, lista parametros, usada, tipo
         list_par = self.lista_parametros(node.child[0])
 
         self.symbols[node.value][2] = list_par
+        self.corpo(node.child[1])
 
-        type_corpo = self.corpo(node.child[1])
-        type_func = self.symbols[node.value][4]
-
-        if type_corpo != type_func:
-            if node.value != "principal":
-                print("ERRO: a funcao " + node.value + " retorna " + type_corpo + " e deveria retornar " + type_func)
-            else:
-                print("WARNING: a funcao " + repr(node.value) + " retorna " + repr(type_corpo) + " e deveria retornar " + repr(type_func))
-
-    '''
-    Cria lista de parâmetros
-    '''
     def lista_parametros(self, node):
         parametros = []
         if len(node.child) == 1:
@@ -227,7 +228,8 @@ class Semantica:
         if node.child[0].type == "parametro":
             return self.parametro(node.child[0])
         else:
-            self.symbols[self.scope + "-" + node.value] = ["variavel", node.value, False, True, node.child[0].type, self.scope]
+            self.symbols[self.scope + "-" + node.value] = ["variavel", node.value, False, True,
+                                                           node.child[0].type, self.scope]
             return self.tipo(node.child[0])
 
     def corpo(self, node):
@@ -236,8 +238,7 @@ class Semantica:
 
         else:
             self.corpo(node.child[0])
-            type_acao = self.acao(node.child[1])
-            return type_acao
+            self.acao(node.child[1])
 
     def acao(self, node):
         if node.child[0].type == "expressao":
@@ -264,9 +265,6 @@ class Semantica:
         elif node.child[0].type == "error":
             return self.error(node.child[0])
 
-    '''
-    Verifica se a expressão é do tipo lógico e se as duas expressões no 'se' sao diferentes
-    '''
     def se(self, node):
         see = self.expressao(node.child[0])
         if see != "logico":
@@ -290,52 +288,52 @@ class Semantica:
         if repeat != "logico":
             print("ERRO: a expressão " + repeat + " nao é do tipo logico")
 
-        return self.corpo(node.child[0])
-
-    '''
-    Verifica se a variável foi declarada e se o tipo da variável condiz com o valor atribuído a ela
-    '''
+    #?????????????????
     def atribuicao(self, node):
-        scope = self.scope + "-" + node.child[0].value
-        if self.scope + "-" + node.child[0].value not in self.symbols.keys():
-            scope = "global" + "-" + node.child[0].value
-            if "global" + "-" + node.child[0].value not in self.symbols.keys():
-                print("ERRO: variavel " + node.child[0].value + " nao foi declarada")
+        try:
+            n_var = self.scope + "-" + node.child[0].value
+            var_code = self.symbols[n_var][6]
+        except:
+            n_var = "global-" + node.child[0].value
+            var_code = self.symbols[n_var][6]
 
-        tipo_before = self.symbols[scope][4]
-        tipo_after = self.expressao(node.child[1])
+        self.expressao(node.child[1])
 
-        if tipo_before == "inteiro[]":
-            tipo_before = tipo_before[:-2]
+        self.symbols[n_var][2] = True
+        self.symbols[n_var][3] = True
 
-        self.symbols[scope][2] = True
-        self.symbols[scope][3] = True
-        if tipo_before != tipo_after:
-            print("WARNING: tipo " + tipo_before + " é diferente de " + tipo_after + " var " + node.child[0].value)
+        var = None
+        no = node.child[1].child[0].child[0].child[0].child[0].child[0].child[0]
+        if no == "var":
+            try:
+                nome_var = self.symbols[
+                    self.scope + "-" + node.child[1].child[0].child[0].child[0].child[0].child[0].child[0].value]
+                assembly = self.symbols[nome_var][6]
+            except:
+                nome_var = self.symbols[
+                    "global-" + node.child[1].child[0].child[0].child[0].child[0].child[0].child[0].value]
+                assembly = self.symbols[nome_var][6]
+            self.builder.store(self.builder.load(assembly), self.symbols[n_var][6])
 
-        return "void"
+        elif no == "numero":
+            valor = node.child[1].child[0].child[0].child[0].child[0].child[0].child[0].value
+
+            if '.' not in valor:
+                self.builder.store(ir.Constant(ir.IntType(32), int(valor)), self.symbols[n_var][6])
+            else:
+                self.builder.store(ir.Constant(ir.FloatType(), float(valor)), self.symbols[n_var][6])
+        #self.builder.store(no, self.symbols[n_var][6])
 
     def leia(self, node):
         if self.scope + "-" + node.value not in self.symbols.keys():
             if "global" + "-" + node.value not in self.symbols.keys():
                 print("ERRO: " + node.value + " nao foi declarada")
 
-        return "void"
-
-    def escreva(self, node):
-        tipo_exp = self.expressao(node.child[0])
-
-        if tipo_exp == "logico":
-            print("ERRO: expressao invalida")
-
-        return "void"
+    # def escreva(self, node):
 
     def retorna(self, node):
-        tipo_exp = self.expressao(node.child[0])
-
-        if tipo_exp == "logico":
-            print("ERRO: expressao invalida")
-        return tipo_exp
+        res = self.expressao(node.child[0])
+        return res
 
     def expressao(self, node):
         if node.child[0].type == "expressao_simples":
@@ -347,17 +345,9 @@ class Semantica:
         if len(node.child) == 1:
             return self.expressao_aditiva(node.child[0])
         else:
-            tipo1 = self.expressao_simples(node.child[0])
+            self.expressao_simples(node.child[0])
             self.operador_relacional(node.child[1])
-            tipo2 = self.expressao_aditiva(node.child[2])
-            if tipo1 == "inteiro[]":
-                tipo1 = tipo1[:-2]
-
-            if tipo2 == "inteiro[]":
-                tipo2 = tipo2[:-2]
-
-            if tipo1 != tipo2:
-                print("WARNING: operacao do tipo " + tipo1 + " é diferente do tipo " + tipo2)
+            self.expressao_aditiva(node.child[2])
             return "logico"
 
     def expressao_aditiva(self, node):
@@ -368,18 +358,11 @@ class Semantica:
             self.operador_soma(node.child[1])
             tipo2 = self.expressao_multiplicativa(node.child[2])
 
-            if tipo1 == "inteiro[]":
-                tipo1 = tipo1[:-2]
-
-            if tipo2 == "inteiro[]":
-                tipo2 = tipo2[:-2]
-
-            if tipo1 != tipo2:
-                print("WARNING: operacao do tipo " + tipo1 + " é diferente do tipo " + tipo2)
             if (tipo1 == "flutuante") or (tipo2 == "flutuante"):
                 return "flutuante"
             else:
                 return "inteiro"
+
 
     def expressao_multiplicativa(self, node):
         if len(node.child) == 1:
@@ -389,18 +372,11 @@ class Semantica:
             self.operador_multiplicacao(node.child[1])
             tipo2 = self.expressao_unaria(node.child[2])
 
-            if tipo1 == "inteiro[]":
-                tipo1 = tipo1[:-2]
-
-            if tipo2 == "inteiro[]":
-                tipo2 = tipo2[:-2]
-
-            if tipo1 != tipo2:
-                print("WARNING: operacao do tipo " + tipo1 + " é diferente do tipo " + tipo2)
             if (tipo1 == "flutuante") or (tipo2 == "flutuante"):
                 return "flutuante"
             else:
                 return "inteiro"
+
 
     def expressao_unaria(self, node):
         if len(node.child) == 1:
@@ -431,6 +407,7 @@ class Semantica:
         else:
             return self.expressao(node.child[0])
 
+
     def numero(self, node):
         var = repr(node.value)
         if ("e" in var) or ("E" in var):
@@ -442,10 +419,6 @@ class Semantica:
         else:
             return "inteiro"
 
-    '''
-    Verifica se existe uma recursão da main, se a main foi chamado em algum outro lugar e se os
-    parâmetros condizem na chamada de uma função
-    '''
     def chamada_funcao(self, node):
         if node.value == "principal" and self.scope == "principal":
             print("WARNING: chamada recursiva para a funcao principal")
@@ -479,52 +452,23 @@ class Semantica:
             if arg_pass[i] != arg_esp[i]:
                 print("WARNING: argumentos invalidos. Espera-se " + arg_esp[i] + "  e foi passado " + arg_pass[i])
 
-        self.symbols[node.value][3] = True
-        return self.symbols[node.value][4]
+        return self.symbols[node.value][3]
 
-    def lista_argumentos(self, node):
-        if len(node.child) == 1:
-            if node.child[0] is None:
-                return self.vazio(node.child[0])
-            if node.child[0].type == "expressao":
-                return self.expressao(node.child[0])
-
-            else:
-                return []
-        else:
-            list_arg = []
-            list_arg.append(self.lista_argumentos(node.child[0]))
-            if not (type(list_arg[0]) is str):
-                list_arg = list_arg[0]
-
-            list_arg.append(self.expressao(node.child[1]))
-            return list_arg
+    #def lista_argumentos(self, node):
 
     def vazio(self, node):
         return "void"
 
-'''
-print da árvore
-'''
-def print_tree(node, level="->"):
-    if node is not None:
-        print("%s %s %s" %(level, node.type, node.value))
-        for son in node.child:
-            print_tree(son, level+"->")
-
-'''
-print da tabela de símbolos
-'''
-def print_symbols(simbolos):
-    for key, values in simbolos.items():
-        print(values)
+def print_trees(symbols):
+    for k, v in symbols.items():
+        print(repr(k)+repr(v))
 
 if __name__ == '__main__':
     codigo = open('C:/Users/Mateu/Desktop/UTFPR-BCC/Compiladores/geracao-codigo-testes/gencode-001.tpp')
-    #r = codigo.read()
-    f = Semantica(codigo.read())
-    print_tree(f.tree)
-    print_symbols(f.symbols)
+    #modulo = ir.Module('module_tpp')
+    gen = GenCode(codigo.read())
+    print(gen.module)
+    print_trees(gen.symbols)
 
     '''
     import sys
