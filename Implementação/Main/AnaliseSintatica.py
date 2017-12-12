@@ -345,7 +345,7 @@ def print_tree(node, level="->"):
             print_tree(son, level+"->")
 
 if __name__ == '__main__':
-    codigo = open('C:/Users/Mateu/Desktop/UTFPR-BCC/Compiladores/semantica-testes/sema-001.tpp')
+    codigo = open('C:/Users/Mateu/Desktop/UTFPR-BCC/Compiladores/geracao-codigo-testes/gencode-012.tpp')
     r = codigo.read()
     f = Sintatica(r)
     print_tree(f.ast)

@@ -520,7 +520,7 @@ def print_symbols(simbolos):
         print(values)
 
 if __name__ == '__main__':
-    codigo = open('C:/Users/Mateu/Desktop/UTFPR-BCC/Compiladores/geracao-codigo-testes/gencode-001.tpp')
+    codigo = open('C:/Users/Mateu/Desktop/UTFPR-BCC/Compiladores/geracao-codigo-testes/gencode-005.tpp')
     #r = codigo.read()
     f = Semantica(codigo.read())
     print_tree(f.tree)

@@ -65,13 +65,13 @@ class GenCode:
                 if var_type == "inteiro":
                     var = self.builder.alloca(ir.IntType(32), name=son)
                     var.align = 4
-                    num1 = ir.Constant(ir.IntType(32), 0)
-                    self.builder.store(num1, var)
+                    num = ir.Constant(ir.IntType(32), 0)
+                    self.builder.store(num, var)
                 if var_type == "flutuante":
                     var = self.builder.alloca(ir.FloatType(), name=son)
                     var.align = 4
-                    num1 = ir.Constant(ir.FloatType(), 0)
-                    self.builder.store(num1, var)
+                    num = ir.Constant(ir.FloatType(), 0)
+                    self.builder.store(num, var)
 
             self.symbols[self.scope + "-" + son] = ["variavel", son, False, False, var_type + var_r, self.scope, var]
 
@@ -152,19 +152,19 @@ class GenCode:
                 param = self.symbols[node.child[0].value][2]
             self.scope = node.child[0].value
             #tipo_return = ir.VoidType()
-            tipo_param = ()
+            tipo_param = []
             if param != "void":
                 for i in param:
                     if i == "inteiro":
-                        tipo_param = ir.IntType(32) + tipo_param
+                        tipo_param.append(ir.IntType(32))
                     if i == "flutuante":
-                        tipo_param = ir.FloatType() + tipo_param
+                        tipo_param.append(ir.FloatType())
             tipo_return = ir.VoidType()
             tipo_func = ir.FunctionType(tipo_return, tipo_param)
-            func = ir.Function(self.module, tipo_func, name=node.child[0].value)
+            self.func = ir.Function(self.module, tipo_func, name=node.child[0].value)
 
-            entryBlock = func.append_basic_block('entry')
-            exitBasicBlock = func.append_basic_block('exit')
+            entryBlock = self.func.append_basic_block('entry')
+            exitBasicBlock = self.func.append_basic_block('exit')
 
             self.builder = ir.IRBuilder(entryBlock)
             self.symbols[node.child[0].value] = ["funcao", node.child[0].value, [], tipo, 0, self.scope]
@@ -185,20 +185,20 @@ class GenCode:
                 tipo_return = ir.IntType(32)
             if tipo == ir.FloatType():
                 tipo_return = ir.FloatType()
-            tipo_param = ()
+            tipo_param = []
             if param != "void":
                 for i in param:
                     if i == "inteiro":
-                        tipo_param = ir.IntType(32) + tipo_param
+                        tipo_param.append(ir.IntType(32))
                     if i == "flutuante":
-                        tipo_param = ir.FloatType() + tipo_param
+                        tipo_param.append(ir.FloatType())
 
             #fnReturntipo = return_tipo
             tipo_func = ir.FunctionType(tipo_return, tipo_param)
-            func = ir.Function(self.module, tipo_func, name=node.child[1].value)
+            self.func = ir.Function(self.module, tipo_func, name=node.child[1].value)
 
-            entryBlock = func.append_basic_block('entry')
-            exitBasicBlock = func.append_basic_block('exit')
+            entryBlock = self.func.append_basic_block('entry')
+            exitBasicBlock = self.func.append_basic_block('exit')
 
             self.builder = ir.IRBuilder(entryBlock)
             self.symbols[node.child[1].value] = ["funcao", node.child[1].value, [], tipo, 0, self.scope]
@@ -238,7 +238,8 @@ class GenCode:
 
         else:
             self.corpo(node.child[0])
-            self.acao(node.child[1])
+            a = self.acao(node.child[1])
+            return a
 
     def acao(self, node):
         if node.child[0].type == "expressao":
@@ -266,27 +267,80 @@ class GenCode:
             return self.error(node.child[0])
 
     def se(self, node):
-        see = self.expressao(node.child[0])
-        if see != "logico":
-            print("ERRO: a expressão " + see + " nao é do tipo logico")
+        tipo_se = self.expressao(node.child[0])
+        print("IFFFF")
+        print(node)
+        se_entao = self.func.append_basic_block('SE-ENTAO')
+        print(node.child[0].child[0].child[1])
 
-        if len(node.child) == 2:
-            return self.corpo(node.child[1])
+        if node.child[0].child[0].child[0].child[0].child[0].child[0].child[0].child[0].type == "var":
+            nome = node.child[0].child[0].child[0].child[0].child[0].child[0].child[0].child[0].value
+            try:
+                e1 = self.symbols[self.scope + "-" + nome][6]
+            except:
+                e1 = self.symbols["global-" + nome][6]
         else:
-            c1 = self.corpo(node.child[1])
-            c2 = self.corpo(node.child[2])
-            if c1 != c2:
-                if c1 == "void":
-                    return c2
-                else:
-                    return c1
+            num = node.child[0].child[0].child[0].child[0].child[0].child[0].child[0].child[0].value
+            if '.' not in num:
+                e1 = ir.Constant(ir.IntType(32), int(num))
+            else:
+                e1 = ir.Constant(ir.FloatType(), float(num))
+        print("EXP1")
+        print(e1)
+        print("EXP2")
+        # if node.child[0].child[0].child[1] == "operador_relacional":
+        #    print("OPAAAAA")
+        #    op = node.child[0].child[0].child[1].value
 
-            return c1
+        #    print(op)
+
+        if node.child[0].child[0].child[2].child[0].child[0].child[0].child[0] == "var":
+            nome = node.child[0].child[0].child[2].child[0].child[0].child[0].child[0].value
+            try:
+                e2 = self.symbols[self.scope + "-" + nome][6]
+            except:
+                e2 = self.symbols["global-" + nome][6]
+        else:
+            num = node.child[0].child[0].child[2].child[0].child[0].child[0].child[0].value
+            if '.' not in num:
+                e2 = ir.Constant(ir.IntType(32), int(num))
+            else:
+                e2 = ir.Constant(ir.FloatType(), float(num))
+        print(e2)
+        res = self.builder.icmp_signed(">", e1, e2)
+
+        if len(node.child) == 3:
+            senao = self.func.append_basic_block('SENAO')
+        fim = self.func.append_basic_block('FIM')
+
+        if len(node.child) == 3:
+            self.builder.cbranch(res, se_entao, se_entao)
+        else:
+            self.builder.cbranch(res, se_entao, fim)
+
+        self.builder.position_at_start(se_entao)
+        self.corpo(node.child[1])
+
+        self.builder.branch(fim)
+        if len(node.child) == 3:
+            self.builder.position_at_start(senao)
+            self.corpo(node.child[2])
+            self.builder.branch(fim)
+
+        self.builder.position_at_start(fim)
 
     def repita(self, node):
-        repeat = self.expressao(node.child[1])
-        if repeat != "logico":
-            print("ERRO: a expressão " + repeat + " nao é do tipo logico")
+        repita = self.func.append_basic_block('REPITA')
+        fim_repita = self.func.append_basic_block('FIM-REPITA')
+
+        self.builder.branch(repita)
+        self.builder.position_at_start(repita)
+        self.corpo(node.child[0])
+
+        condicao = self.expressao(node.child[1])
+
+        #self.builder.cbranch(condicao, fim_repita, repita)
+        self.builder.position_at_start(fim_repita)
 
     #?????????????????
     def atribuicao(self, node):
@@ -303,33 +357,33 @@ class GenCode:
         self.symbols[n_var][3] = True
 
         var = None
-        no = node.child[1].child[0].child[0].child[0].child[0].child[0].child[0]
-        if no == "var":
+        no = node.child[1].child[0].child[0].child[0].child[0].child[0]
+        print("NOOOOO")
+        print(no.child[0])
+        if no.child[0] == "var":
             try:
-                nome_var = self.symbols[
-                    self.scope + "-" + node.child[1].child[0].child[0].child[0].child[0].child[0].child[0].value]
+                nome_var = self.symbols[self.scope + "-" + no.value]
                 assembly = self.symbols[nome_var][6]
             except:
-                nome_var = self.symbols[
-                    "global-" + node.child[1].child[0].child[0].child[0].child[0].child[0].child[0].value]
+                nome_var = self.symbols["global-" + no.value]
                 assembly = self.symbols[nome_var][6]
             self.builder.store(self.builder.load(assembly), self.symbols[n_var][6])
 
-        elif no == "numero":
-            valor = node.child[1].child[0].child[0].child[0].child[0].child[0].child[0].value
+        elif no.child[0] == "numero":
+            valor = no.value
 
             if '.' not in valor:
                 self.builder.store(ir.Constant(ir.IntType(32), int(valor)), self.symbols[n_var][6])
             else:
                 self.builder.store(ir.Constant(ir.FloatType(), float(valor)), self.symbols[n_var][6])
-        #self.builder.store(no, self.symbols[n_var][6])
 
     def leia(self, node):
         if self.scope + "-" + node.value not in self.symbols.keys():
             if "global" + "-" + node.value not in self.symbols.keys():
                 print("ERRO: " + node.value + " nao foi declarada")
 
-    # def escreva(self, node):
+    def escreva(self, node):
+        self.expressao(node.child[0])
 
     def retorna(self, node):
         res = self.expressao(node.child[0])
@@ -351,6 +405,7 @@ class GenCode:
             return "logico"
 
     def expressao_aditiva(self, node):
+        res = None
         if len(node.child) == 1:
             return self.expressao_multiplicativa(node.child[0])
         else:
@@ -358,11 +413,10 @@ class GenCode:
             self.operador_soma(node.child[1])
             tipo2 = self.expressao_multiplicativa(node.child[2])
 
-            if (tipo1 == "flutuante") or (tipo2 == "flutuante"):
+            if tipo1 == "flutuante" or tipo2 == "flutuante":
                 return "flutuante"
             else:
                 return "inteiro"
-
 
     def expressao_multiplicativa(self, node):
         if len(node.child) == 1:
@@ -372,11 +426,10 @@ class GenCode:
             self.operador_multiplicacao(node.child[1])
             tipo2 = self.expressao_unaria(node.child[2])
 
-            if (tipo1 == "flutuante") or (tipo2 == "flutuante"):
+            if tipo1 == "flutuante" or tipo2 == "flutuante":
                 return "flutuante"
             else:
                 return "inteiro"
-
 
     def expressao_unaria(self, node):
         if len(node.child) == 1:
@@ -386,22 +439,22 @@ class GenCode:
             return self.fator(node.child[1])
 
     def operador_relacional(self, node):
-        return None
+        return node.value
 
     def operador_soma(self, node):
-        return None
+        return node.value
 
     def operador_multiplicacao(self, node):
-        return None
+        return node.value
 
     def fator(self, node):
         if node.child[0].type == "var":
             return self.var(node.child[0])
 
-        if node.child[0].type == "chamada_funcao":
+        elif node.child[0].type == "chamada_funcao":
             return self.chamada_funcao(node.child[0])
 
-        if node.child[0].type == "numero":
+        elif node.child[0].type == "numero":
             return self.numero(node.child[0])
 
         else:
@@ -420,41 +473,14 @@ class GenCode:
             return "inteiro"
 
     def chamada_funcao(self, node):
-        if node.value == "principal" and self.scope == "principal":
-            print("WARNING: chamada recursiva para a funcao principal")
+        var = None
 
-        if node.value == "principal" and self.scope != "principal":
-            print("ERRO: chamada da funcao principal na funcao " + self.scope)
-            exit(1)
-
-        if node.value not in self.symbols.keys():
-            print("ERRO: funcao " + node.value + " nao foi declarada")
-            exit(1)
-
-        arg_pass = []
-        arg_pass.append(self.lista_argumentos(node.child[0]))
-        #print(arg_pass[0])
-        if arg_pass[0] is "void":
-            arg_pass = []
-
-        elif type(arg_pass[0]) != str:
-            arg_pass = arg_pass[0]
-
-        arg_esp = self.symbols[node.value][2]
-
-        if type(arg_esp) is str:
-            arg_esp = []
-
-        if len(arg_pass) != len(arg_esp):
-            print("ERRO: argumentos invalidos. Espera-se " + repr(len(arg_esp)) + " e foi passado " + repr(len(arg_pass)))
-
-        for i in range(len(arg_pass)):
-            if arg_pass[i] != arg_esp[i]:
-                print("WARNING: argumentos invalidos. Espera-se " + arg_esp[i] + "  e foi passado " + arg_pass[i])
-
-        return self.symbols[node.value][3]
-
-    #def lista_argumentos(self, node):
+    def lista_argumentos(self, node):
+        if len(node.child) == 1:
+            if node.child[0] is None:
+                return self.vazio(node.child[0])
+            if node.child[0].type == "expressao":
+                return self.expressao(node.child[0])
 
     def vazio(self, node):
         return "void"
@@ -464,7 +490,7 @@ def print_trees(symbols):
         print(repr(k)+repr(v))
 
 if __name__ == '__main__':
-    codigo = open('C:/Users/Mateu/Desktop/UTFPR-BCC/Compiladores/geracao-codigo-testes/gencode-001.tpp')
+    codigo = open('C:/Users/Mateu/Desktop/UTFPR-BCC/Compiladores/geracao-codigo-testes/gencode-004.tpp')
     #modulo = ir.Module('module_tpp')
     gen = GenCode(codigo.read())
     print(gen.module)
