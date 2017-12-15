@@ -94,23 +94,9 @@ class Sintatica:
     def p_tipo(self, p):
         '''
         tipo : INTEIRO
+            | FLUTUANTE
         '''
-
-        p[0] = Tree('inteiro')
-
-    def p_tipo1(self, p):
-        '''
-        tipo : FLUTUANTE
-        '''
-
-        p[0] = Tree('flutuante')
-
-    def p_tipo2(self, p):
-        '''
-        tipo : NUM_CIENTIFICA
-        '''
-
-        p[0] = Tree('cientifico')
+        p[0] = Tree(p[1], [], p[1])
 
     def p_declaracao_funcao(self, p):
         '''
@@ -142,8 +128,12 @@ class Sintatica:
     def p_parametro(self, p):
         '''
         parametro : tipo DOISPONTOS ID
+                    | ID
         '''
-        p[0] = Tree('parametro', [p[1]], p[3])
+        if len(p) == 4:
+            p[0] = Tree('parametro', [p[1]], p[3])
+        else:
+            p[0] = Tree('parametro', [], p[1])
 
     def p_parametro2(self, p):
         '''
@@ -254,7 +244,7 @@ class Sintatica:
     def p_expressao_unaria(self, p):
         '''
         expressao_unaria : fator
-                           | operador_soma fator
+                           | operador_unario fator
         '''
         if len(p) == 2:
             p[0] = Tree('expressao_unaria', [p[1]])
@@ -269,22 +259,32 @@ class Sintatica:
                               | DIF
                               | MENOREQ
                               | MAIOREQ
+                              | ELOGICO
+                              | OULOGICO
         '''
-        p[0] = Tree('operador_relacional', [])
+        p[0] = Tree('operador_relacional', [], p[1])
 
     def p_operador_soma(self, p):
         '''
         operador_soma : PLUS
                         | MINUS
         '''
-        p[0] = Tree('operador_soma', [])
+        p[0] = Tree('operador_soma', [], p[1])
+
+    def p_operador_unario(self, p):
+        '''
+        operador_unario : PLUS
+                          | MINUS
+                          | NEGACAO
+        '''
+        p[0] = Tree('operador_unario', [], p[1])
 
     def p_operador_multiplicacao(self, p):
         '''
         operador_multiplicacao : VEZES
                                  | DIVIDE
         '''
-        p[0] = Tree('operador_multiplicacao', [])
+        p[0] = Tree('operador_multiplicacao', [], p[1])
 
     def p_fator(self, p):
         '''

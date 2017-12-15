@@ -1,16 +1,44 @@
 from llvmlite import ir
 from Main.AnaliseSintatica import Sintatica
 from Main.AnaliseSemantica import Semantica
+from pprint import pprint
 
 class GenCode:
     def __init__(self, code):
         self.tree = Sintatica(code).ast
         self.module = ir.Module('program')
         self.symbols = Semantica(code).symbols
-        self.scope = "global"
+        self.scope = "global" #escopo atual
+        self.scope_list = ["global"] #salva a lista de escopo
         self.builder = None
         self.func = None
+        self.bloco = None #bloco atual
+        self.ultimo_tipo = None #quando o parametro nao tiver tipo, pega o anterior
+        self.posicao_parametro = 0 #controle de parametro
+        self.leia_float = ir.Function(self.module, ir.FunctionType(ir.FloatType(), []), name="leiaFlutuante")
+        self.leia_int = ir.Function(self.module, ir.FunctionType(ir.IntType(32), []), name="leiaInteiro")
+        self.escreve_float = ir.Function(self.module, ir.FunctionType(ir.IntType(32), [ir.FloatType()]), name="escrevaFlutuante")
+        self.escreve_int = ir.Function(self.module, ir.FunctionType(ir.IntType(32), [ir.IntType(32)]), name="escrevaInteiro")
         self.programa(self.tree)
+
+    '''
+    encontra a variavel na tabela de simbolos de acordo com o escopo
+    trata o problema caso uma variavel foi declarada em um lugar e atribuida ou acessada em outro
+    '''
+    def find_var(self, name):
+        for scope in reversed(self.scope_list):
+            for key, value in self.symbols.items():
+                if value[0] == "variavel" and value[5] == scope and value[1] == name and len(value) >= 7:
+                    return value
+
+        return None
+
+    def find_func(self, name):
+        for key, value in self.symbols.items():
+            if value[0] == "funcao" and value[1] == name:
+                return value
+
+        return None
 
     def programa(self, node):
         self.lista_declaracoes(node.child[0])
@@ -28,92 +56,57 @@ class GenCode:
         elif node.child[0].type == "inicializacao_variaveis":
             self.inicializacao_variaveis(node.child[0])
         else:
-            if len(node.child[0].child) == 1:
-                self.scope = node.child[0].child[0].value
-            else:
-                self.scope = node.child[0].child[1].value
-
             self.declaracao_funcao(node.child[0])
-            self.scope = "global"
+            self.scope_list.pop()
+            self.scope = self.scope_list[-1]
 
     def declaracao_variaveis(self, node):
         var_type = node.child[0].type
-        var_name = ""
-        var_r = ""  # restante
-        i = 0
+        lista_vars = self.lista_variaveis(node.child[1])
 
-        for son in self.lista_variaveis(node.child[1]):
-            if "[" in son:
-                for i in range(len(son)):
-                    if son[i] == "[":
-                        break
-                    var_name += son[i]
-                var_r = son[i:]
-                son = var_name
+        for varname in lista_vars:
             if self.scope == "global":
                 if var_type == "inteiro":
-                    var = ir.GlobalVariable(self.module, ir.IntType(32), son)
+                    var = ir.GlobalVariable(self.module, ir.IntType(32), varname)
                     var.initializer = ir.Constant(ir.IntType(32), 0)
-                    var.linkage = "common"
-                    var.align = 4
-                if var_type == "flutuante":
-                    var = ir.GlobalVariable(self.module, ir.FloatType(), son)
+                else:
+                    var = ir.GlobalVariable(self.module, ir.FloatType(), varname)
                     var.initializer = ir.Constant(ir.FloatType(), 0)
-                    var.linkage = "common"
-                    var.align = 4
             else:
                 if var_type == "inteiro":
-                    var = self.builder.alloca(ir.IntType(32), name=son)
-                    var.align = 4
-                    num = ir.Constant(ir.IntType(32), 0)
-                    self.builder.store(num, var)
-                if var_type == "flutuante":
-                    var = self.builder.alloca(ir.FloatType(), name=son)
-                    var.align = 4
-                    num = ir.Constant(ir.FloatType(), 0)
-                    self.builder.store(num, var)
+                    var = self.builder.alloca(ir.IntType(32), name=varname)
+                else:
+                    var = self.builder.alloca(ir.FloatType(), name=varname)
+                #num = ir.Constant(ir.FloatType(), 0)
+                #self.builder.store(num, var)
 
-            self.symbols[self.scope + "-" + son] = ["variavel", son, False, False, var_type + var_r, self.scope, var]
+            var.linkage = "common"
+            var.align = 4
+            self.symbols[self.scope + "-" + varname] = ["variavel", varname, False, False, var_type, self.scope, var]
 
     def inicializacao_variaveis(self, node):
         self.atribuicao(node.child[0])
 
     def lista_variaveis(self, node):
-        print("bbbbbbbbbb")
         list_var = []
+
         if len(node.child) == 1:
-            if len(node.child[0].child) == 1:
-                list_var.append(node.child[0].value + self.indice(node.child[0].child[0]))
-            else:
-                list_var.append(node.child[0].value)
-
-            return list_var
-
+            list_var.append(self.varname(node.child[0]))
         else:
-            list_var = self.lista_variaveis(node.child[0])
+            for item in self.lista_variaveis(node.child[0]):
+                list_var.append(item)
+            list_var.append(self.varname(node.child[1]))
 
-            if len(node.child[1].child) == 1:
-                list_var.append(node.child[1].value) + self.indice(node.child[1].child[0])
-            else:
-                list_var.append(node.child[1].value)
+        return list_var
 
-            print("asf " + list_var)
-            return list_var
+    def varname(self, node):
+        if len(node.child) == 0:
+            return node.value
 
-    def var(self, node):
-        name_var = self.scope + "-" + node.value
-        if name_var not in self.symbols:
-            name_var = "global" + "-" + node.value
-            if name_var not in self.symbols:
-                print("ERRO: variavel " + node.value + " nao foi declarada")
-                exit(1)
+        print("eroooo") # todo
+        exit(1)
 
-        if self.symbols[name_var][3] is False:
-            print("ERRO: variavel " + node.value + " sem atribuicao")
-
-        self.symbols[name_var][2] = True  # seta ID com valor utilizado
-        return self.symbols[name_var][4]
-
+    # todo
     def indice(self, node):
         if len(node.child) == 1:
             tipo = self.expressao(node.child[0])
@@ -129,117 +122,87 @@ class GenCode:
 
             return "[]" + var
 
-    def tipo(self, node):
-        print("asdfasd")
-        print(node)
-        if node == "inteiro":
-            return ir.IntType(32)
-        elif node == "flutuante":
-            return ir.FloatType()
-        else:
-            # Caso type
-            if node.type == "inteiro":
-                return ir.IntType(32)
-            else:
-                return ir.FloatType()
-
     def declaracao_funcao(self, node):
+        offset = 0
         if len(node.child) == 1:
-            tipo = "void"
-            if self.symbols[node.child[0].value][2] is None:
-                param = ir.VoidType()
-            else:
-                param = self.symbols[node.child[0].value][2]
-            self.scope = node.child[0].value
-            #tipo_return = ir.VoidType()
-            tipo_param = []
-            if param != "void":
-                for i in param:
-                    if i == "inteiro":
-                        tipo_param.append(ir.IntType(32))
-                    if i == "flutuante":
-                        tipo_param.append(ir.FloatType())
-            tipo_return = ir.VoidType()
-            tipo_func = ir.FunctionType(tipo_return, tipo_param)
-            self.func = ir.Function(self.module, tipo_func, name=node.child[0].value)
-
-            entryBlock = self.func.append_basic_block('entry')
-            exitBasicBlock = self.func.append_basic_block('exit')
-
-            self.builder = ir.IRBuilder(entryBlock)
-            self.symbols[node.child[0].value] = ["funcao", node.child[0].value, [], tipo, 0, self.scope]
-            self.cabecalho(node.child[0])
+            retorno = None
+            llvm_retorno = ir.VoidType()
         else:
-            print("ccccc")
-            tipo = self.tipo(node.child[0])
-            print(tipo)
-            if self.symbols[node.child[1].value][2] is None:
-                param = ir.VoidType()
+            offset = 1
+            if node.child[0].value == "inteiro":
+                retorno = "inteiro"
+                llvm_retorno = ir.IntType(32)
             else:
-                param = self.symbols[node.child[1].value][2]
+                retorno = "flutuante"
+                llvm_retorno = ir.FloatType()
 
-            self.scope = node.child[1].value
-            tipo_return = None
-            if tipo == ir.IntType(32):
+        cabeca = self.cabecalho(retorno, node.child[offset])
+        lista_param = cabeca[0]
+        llvm_params = []
+        corpo_node = cabeca[1]
+        func_nome = cabeca[2]
 
-                tipo_return = ir.IntType(32)
-            if tipo == ir.FloatType():
-                tipo_return = ir.FloatType()
-            tipo_param = []
-            if param != "void":
-                for i in param:
-                    if i == "inteiro":
-                        tipo_param.append(ir.IntType(32))
-                    if i == "flutuante":
-                        tipo_param.append(ir.FloatType())
+        for param in lista_param:
+            tipo = param[0]
 
-            #fnReturntipo = return_tipo
-            tipo_func = ir.FunctionType(tipo_return, tipo_param)
-            self.func = ir.Function(self.module, tipo_func, name=node.child[1].value)
+            if tipo == "inteiro":
+                llvm_params.append(ir.IntType(32))
+            else:
+                llvm_params.append(ir.FloatType())
 
-            entryBlock = self.func.append_basic_block('entry')
-            exitBasicBlock = self.func.append_basic_block('exit')
+        if func_nome == "principal":
+            nome_func = "main"
+        else:
+            nome_func = func_nome
+        llvm_func_type = ir.FunctionType(llvm_retorno, llvm_params)
+        self.func = ir.Function(self.module, llvm_func_type, name=nome_func)
 
-            self.builder = ir.IRBuilder(entryBlock)
-            self.symbols[node.child[1].value] = ["funcao", node.child[1].value, [], tipo, 0, self.scope]
-            self.cabecalho(node.child[1])
+        scope_nome = func_nome
+        self.scope_list.append(scope_nome)
+        self.scope = scope_nome
 
-    def cabecalho(self, node):
-        list_par = self.lista_parametros(node.child[0])
+        entry_block = self.func.append_basic_block('entry')
 
-        self.symbols[node.value][2] = list_par
-        self.corpo(node.child[1])
+        self.builder = ir.IRBuilder(entry_block)
+        self.bloco = entry_block
+        self.symbols[func_nome] = ["funcao", func_nome, lista_param, llvm_retorno, 0, scope_nome, self.func]
+        self.corpo(corpo_node)
+
+    def cabecalho(self, tipo, node):
+        self.posicao_parametro = 0
+        lista_par = self.lista_parametros(node.child[0])
+        print(node.value)
+
+        return [lista_par, node.child[1], node.value]
 
     def lista_parametros(self, node):
-        parametros = []
-        if len(node.child) == 1:
-            if node.child[0] is None:
-                return self.vazio(node.child[0])
-            else:
-                parametros.append(self.parametro(node.child[0]))
-                return parametros
-
-        else:
+        if len(node.child) == 1 and node.child[0] is not None:
+            return [self.parametro(node.child[0])]
+        elif len(node.child) == 2:
             parametros = self.lista_parametros(node.child[0])
             parametros.append(self.parametro(node.child[1]))
+
             return parametros
+        else:
+            return []
 
     def parametro(self, node):
-        if node.child[0].type == "parametro":
-            return self.parametro(node.child[0])
+        if len(node.child) == 0:
+            tipo = self.ultimo_tipo
         else:
-            self.symbols[self.scope + "-" + node.value] = ["variavel", node.value, False, True,
-                                                           node.child[0].type, self.scope]
-            return self.tipo(node.child[0])
+            tipo = node.child[0].value
+
+        self.ultimo_tipo = tipo
+        name = node.value
+        posicao = self.posicao_parametro
+        self.posicao_parametro += 1
+
+        return [tipo, name, posicao]
 
     def corpo(self, node):
-        if len(node.child) == 1:
-            return self.vazio(node.child[0])
-
-        else:
+        if len(node.child) == 2:
             self.corpo(node.child[0])
-            a = self.acao(node.child[1])
-            return a
+            self.acao(node.child[1])
 
     def acao(self, node):
         if node.child[0].type == "expressao":
@@ -266,128 +229,132 @@ class GenCode:
         elif node.child[0].type == "error":
             return self.error(node.child[0])
 
+    # todo
     def se(self, node):
-        tipo_se = self.expressao(node.child[0])
-        print("IFFFF")
-        print(node)
-        se_entao = self.func.append_basic_block('SE-ENTAO')
-        print(node.child[0].child[0].child[1])
+        if len(node.child) == 2:
+            origem_bloco = self.bloco
+            condicao_expr = self.expressao(node.child[0])
 
-        if node.child[0].child[0].child[0].child[0].child[0].child[0].child[0].child[0].type == "var":
-            nome = node.child[0].child[0].child[0].child[0].child[0].child[0].child[0].child[0].value
-            try:
-                e1 = self.symbols[self.scope + "-" + nome][6]
-            except:
-                e1 = self.symbols["global-" + nome][6]
+            true_bloco = self.func.append_basic_block("SE-VERDADE")
+            self.bloco = true_bloco
+            self.builder.position_at_end(true_bloco)
+            self.corpo(node.child[1])
+            outer_true_bloco = self.bloco
+
+            self.bloco = origem_bloco
+            self.builder.position_at_end(origem_bloco)
+            fim_bloco = self.func.append_basic_block("SE-TERMINO")
+
+            self.builder.cbranch(condicao_expr, true_bloco, fim_bloco)
+
+            self.bloco = outer_true_bloco
+            self.builder.position_at_end(outer_true_bloco)
+
+            if not self.bloco.is_terminated:
+                self.builder.branch(fim_bloco)
+
+            self.bloco = fim_bloco
+            self.builder.position_at_end(fim_bloco)
         else:
-            num = node.child[0].child[0].child[0].child[0].child[0].child[0].child[0].child[0].value
-            if '.' not in num:
-                e1 = ir.Constant(ir.IntType(32), int(num))
-            else:
-                e1 = ir.Constant(ir.FloatType(), float(num))
-        print("EXP1")
-        print(e1)
-        print("EXP2")
-        # if node.child[0].child[0].child[1] == "operador_relacional":
-        #    print("OPAAAAA")
-        #    op = node.child[0].child[0].child[1].value
+            origem_bloco = self.bloco
+            condicao_expr = self.expressao(node.child[0])
 
-        #    print(op)
+            true_bloco = self.func.append_basic_block("SE-VERDADE")
+            self.bloco = true_bloco
+            self.builder.position_at_end(true_bloco)
+            self.corpo(node.child[1])
+            outer_true_bloco = self.bloco
 
-        if node.child[0].child[0].child[2].child[0].child[0].child[0].child[0] == "var":
-            nome = node.child[0].child[0].child[2].child[0].child[0].child[0].child[0].value
-            try:
-                e2 = self.symbols[self.scope + "-" + nome][6]
-            except:
-                e2 = self.symbols["global-" + nome][6]
-        else:
-            num = node.child[0].child[0].child[2].child[0].child[0].child[0].child[0].value
-            if '.' not in num:
-                e2 = ir.Constant(ir.IntType(32), int(num))
-            else:
-                e2 = ir.Constant(ir.FloatType(), float(num))
-        print(e2)
-        res = self.builder.icmp_signed(">", e1, e2)
+            false_bloco = self.func.append_basic_block("SE-FALSO")
+            self.bloco = false_bloco
+            self.builder.position_at_end(false_bloco)
+            self.corpo(node.child[1])
+            outer_false_bloco = self.bloco
 
-        if len(node.child) == 3:
-            senao = self.func.append_basic_block('SENAO')
-        fim = self.func.append_basic_block('FIM')
+            self.bloco = origem_bloco
+            self.builder.position_at_end(origem_bloco)
+            fim_bloco = self.func.append_basic_block("SE-TERMINO")
 
-        if len(node.child) == 3:
-            self.builder.cbranch(res, se_entao, se_entao)
-        else:
-            self.builder.cbranch(res, se_entao, fim)
+            self.builder.cbranch(condicao_expr, true_bloco, false_bloco)
 
-        self.builder.position_at_start(se_entao)
-        self.corpo(node.child[1])
+            self.bloco = outer_true_bloco
+            self.builder.position_at_end(outer_true_bloco)
 
-        self.builder.branch(fim)
-        if len(node.child) == 3:
-            self.builder.position_at_start(senao)
-            self.corpo(node.child[2])
-            self.builder.branch(fim)
+            if not self.bloco.is_terminated:
+                self.builder.branch(fim_bloco)
 
-        self.builder.position_at_start(fim)
+            self.bloco = outer_false_bloco
+            self.builder.position_at_end(outer_false_bloco)
+
+            if not self.bloco.is_terminated:
+                self.builder.branch(fim_bloco)
+
+            self.bloco = fim_bloco
+            self.builder.position_at_end(fim_bloco)
 
     def repita(self, node):
-        repita = self.func.append_basic_block('REPITA')
-        fim_repita = self.func.append_basic_block('FIM-REPITA')
+        origem_bloco = self.bloco
 
+        repita = self.func.append_basic_block("REPITA")
         self.builder.branch(repita)
-        self.builder.position_at_start(repita)
+        self.bloco = repita
+        self.builder.position_at_end(repita)
         self.corpo(node.child[0])
 
-        condicao = self.expressao(node.child[1])
+        ate_expr = self.expressao(node.child[1])
 
-        #self.builder.cbranch(condicao, fim_repita, repita)
-        self.builder.position_at_start(fim_repita)
+        self.bloco = origem_bloco
+        self.builder.position_at_end(origem_bloco)
+        fim_repita = self.func.append_basic_block("FIM-REPITA")
 
-    #?????????????????
+        self.bloco = repita
+        self.builder.position_at_end(repita)
+
+        self.builder.cbranch(ate_expr, fim_repita, repita)
+
+        self.bloco = fim_repita
+        self.builder.position_at_end(fim_repita)
+
     def atribuicao(self, node):
-        try:
-            n_var = self.scope + "-" + node.child[0].value
-            var_code = self.symbols[n_var][6]
-        except:
-            n_var = "global-" + node.child[0].value
-            var_code = self.symbols[n_var][6]
+        varname = self.varname(node.child[0])
+        expr = self.expressao(node.child[1])
+        var = self.find_var(varname)
 
-        self.expressao(node.child[1])
+        if var is None:
+            return
 
-        self.symbols[n_var][2] = True
-        self.symbols[n_var][3] = True
+        llvm_var = var[6]
 
-        var = None
-        no = node.child[1].child[0].child[0].child[0].child[0].child[0]
-        print("NOOOOO")
-        print(no.child[0])
-        if no.child[0] == "var":
-            try:
-                nome_var = self.symbols[self.scope + "-" + no.value]
-                assembly = self.symbols[nome_var][6]
-            except:
-                nome_var = self.symbols["global-" + no.value]
-                assembly = self.symbols[nome_var][6]
-            self.builder.store(self.builder.load(assembly), self.symbols[n_var][6])
-
-        elif no.child[0] == "numero":
-            valor = no.value
-
-            if '.' not in valor:
-                self.builder.store(ir.Constant(ir.IntType(32), int(valor)), self.symbols[n_var][6])
-            else:
-                self.builder.store(ir.Constant(ir.FloatType(), float(valor)), self.symbols[n_var][6])
+        var[2] = True
+        var[3] = True
+        self.builder.store(expr, llvm_var)
 
     def leia(self, node):
-        if self.scope + "-" + node.value not in self.symbols.keys():
-            if "global" + "-" + node.value not in self.symbols.keys():
-                print("ERRO: " + node.value + " nao foi declarada")
+        var = self.find_var(node.value)
+
+        if var[4] == "inteiro":
+            llvm_func = self.leia_int
+        else:
+            llvm_func = self.leia_float
+
+        llvm_var = var[6]
+        llvm_value = self.builder.call(llvm_func, [], "")
+        self.builder.store(llvm_value, llvm_var)
 
     def escreva(self, node):
-        self.expressao(node.child[0])
+        llvm_value = self.expressao(node.child[0])
+        llvm_value_type = llvm_value.type
+
+        if llvm_value_type == ir.IntType(32):
+            llvm_func = self.escreve_int
+        else:
+            llvm_func = self.escreve_float
+
+        self.builder.call(llvm_func, [llvm_value], "")
 
     def retorna(self, node):
         res = self.expressao(node.child[0])
-        return res
+        self.builder.ret(res)
 
     def expressao(self, node):
         if node.child[0].type == "expressao_simples":
@@ -399,99 +366,135 @@ class GenCode:
         if len(node.child) == 1:
             return self.expressao_aditiva(node.child[0])
         else:
-            self.expressao_simples(node.child[0])
-            self.operador_relacional(node.child[1])
-            self.expressao_aditiva(node.child[2])
-            return "logico"
+            left = self.expressao_simples(node.child[0])
+            tipo_opr = node.child[1].value
+            right = self.expressao_aditiva(node.child[2])
+
+            if tipo_opr == "=":
+                tipo_opr = "=="
+            if tipo_opr == "&&":
+                result = self.builder.and_(left, right, "")
+            elif tipo_opr == "||":
+                result = self.builder.or_(left, right, "")
+            else:
+                result = self.builder.icmp_signed(tipo_opr, left, right, "")
+
+            return result
 
     def expressao_aditiva(self, node):
-        res = None
         if len(node.child) == 1:
             return self.expressao_multiplicativa(node.child[0])
         else:
-            tipo1 = self.expressao_aditiva(node.child[0])
-            self.operador_soma(node.child[1])
-            tipo2 = self.expressao_multiplicativa(node.child[2])
+            left = self.expressao_aditiva(node.child[0])
+            tipo_opr = node.child[1].value
+            right = self.expressao_multiplicativa(node.child[2])
 
-            if tipo1 == "flutuante" or tipo2 == "flutuante":
-                return "flutuante"
+            if left.type is ir.FloatType() or right.type is ir.FloatType():
+                if tipo_opr == "+":
+                    return self.builder.fadd(left, right)
+                elif tipo_opr == "-":
+                    return self.builder.fsub(left, right)
             else:
-                return "inteiro"
+                if tipo_opr == "+":
+                    return self.builder.add(left, right)
+                elif tipo_opr == "-":
+                    return self.builder.sub(left, right)
 
     def expressao_multiplicativa(self, node):
         if len(node.child) == 1:
             return self.expressao_unaria(node.child[0])
         else:
-            tipo1 = self.expressao_multiplicativa(node.child[0])
-            self.operador_multiplicacao(node.child[1])
-            tipo2 = self.expressao_unaria(node.child[2])
+            left = self.expressao_multiplicativa(node.child[0])
+            tipo_opr = node.child[1].value
+            right = self.expressao_unaria(node.child[2])
 
-            if tipo1 == "flutuante" or tipo2 == "flutuante":
-                return "flutuante"
+            if left.type is ir.FloatType() or right.type is ir.FloatType():
+                if tipo_opr == "*":
+                    return self.builder.fmul(left, right)
             else:
-                return "inteiro"
+                return self.builder.mul(left, right)
+
+            if tipo_opr == "/":
+                return self.builder.fdiv(left, right)
 
     def expressao_unaria(self, node):
         if len(node.child) == 1:
             return self.fator(node.child[0])
         else:
-            self.operador_soma(node.child[0])
-            return self.fator(node.child[1])
+            tipo_opr = node.child[0].value
+            expr = self.fator(node.child[1])
 
-    def operador_relacional(self, node):
-        return node.value
+            if tipo_opr == "-" or tipo_opr == "!":
+                return self.builder.neg(expr)
 
-    def operador_soma(self, node):
-        return node.value
-
-    def operador_multiplicacao(self, node):
-        return node.value
+            return expr
 
     def fator(self, node):
         if node.child[0].type == "var":
             return self.var(node.child[0])
-
         elif node.child[0].type == "chamada_funcao":
             return self.chamada_funcao(node.child[0])
-
         elif node.child[0].type == "numero":
             return self.numero(node.child[0])
-
         else:
             return self.expressao(node.child[0])
 
+    def var(self, node):
+        varname = node.value
+        var = self.find_var(varname)
+
+        if var is None:
+            func_nome = self.func.name
+            func = self.find_func(func_nome)
+            params = func[2]
+
+            for param in params:
+                nome = param[1]
+
+                if nome == varname:
+                    indice = param[2]
+                    return self.func.args[indice]
+
+        return self.builder.load(var[6])
 
     def numero(self, node):
-        var = repr(node.value)
-        if ("e" in var) or ("E" in var):
-            return "cientifico"
+        plain = node.value
 
-        if "." in var:
-            return "flutuante"
+        if "e" in plain or "E" in plain:
+            print("cientifico")
+            exit(1)
+            return None
 
+        if "." in plain:
+            return ir.Constant(ir.FloatType(), float(plain))
         else:
-            return "inteiro"
+            return ir.Constant(ir.IntType(32), int(plain))
 
     def chamada_funcao(self, node):
-        var = None
+        func_name = node.value
+        lista_args = self.lista_argumentos(node.child[0])
+        func = self.find_func(func_name)
+        llvm_func = func[6]
+
+        return self.builder.call(llvm_func, lista_args, "")
 
     def lista_argumentos(self, node):
         if len(node.child) == 1:
             if node.child[0] is None:
-                return self.vazio(node.child[0])
-            if node.child[0].type == "expressao":
-                return self.expressao(node.child[0])
+                return []
 
-    def vazio(self, node):
-        return "void"
+            return [self.expressao(node.child[0])]
+        else:
+            args = self.lista_argumentos(node.child[0])
+            args.append(self.expressao(node.child[1]))
+            return args
 
 def print_trees(symbols):
     for k, v in symbols.items():
         print(repr(k)+repr(v))
 
 if __name__ == '__main__':
-    codigo = open('C:/Users/Mateu/Desktop/UTFPR-BCC/Compiladores/geracao-codigo-testes/gencode-004.tpp')
-    #modulo = ir.Module('module_tpp')
+    codigo = open('C:/Users/Mateu/Desktop/UTFPR-BCC/Compiladores/geracao-codigo-testes/gencode-003.tpp')
     gen = GenCode(codigo.read())
     print(gen.module)
     print_trees(gen.symbols)
@@ -499,7 +502,6 @@ if __name__ == '__main__':
     '''
     import sys
     codigo = open(sys.argv[1])
-    f = Semantica(codigo.read())
-    print_tree(f.tree)
-    print_symbols(f.symbols)
+    gen = GenCode(codigo.read())
+    print(gen.module)
     '''

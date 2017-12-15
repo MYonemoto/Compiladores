@@ -7,6 +7,7 @@ class Semantica:
         self.symbols = {}
         self.scope = "global"
         self.tree = Sintatica(code).ast
+        self.ultimo_tipo = None
         self.programa(self.tree)
         self.verify_main(self.symbols)
         self.var_used(self.symbols)
@@ -224,11 +225,17 @@ class Semantica:
             return parametros
 
     def parametro(self, node):
-        if node.child[0].type == "parametro":
+        if len(node.child) > 0 and node.child[0].type == "parametro":
             return self.parametro(node.child[0])
         else:
-            self.symbols[self.scope + "-" + node.value] = ["variavel", node.value, False, True, node.child[0].type, self.scope]
-            return self.tipo(node.child[0])
+            if len(node.child) == 0:
+                tipo = self.ultimo_tipo
+            else:
+                tipo = self.tipo(node.child[0])
+
+            self.symbols[self.scope + "-" + node.value] = ["variavel", node.value, False, True, tipo, self.scope]
+            self.ultimo_tipo = tipo
+            return tipo
 
     def corpo(self, node):
         if len(node.child) == 1:
@@ -410,13 +417,13 @@ class Semantica:
             return self.fator(node.child[1])
 
     def operador_relacional(self, node):
-        return None
+        return node.value
 
     def operador_soma(self, node):
-        return None
+        return node.value
 
     def operador_multiplicacao(self, node):
-        return None
+        return node.value
 
     def fator(self, node):
         if node.child[0].type == "var":
@@ -520,7 +527,7 @@ def print_symbols(simbolos):
         print(values)
 
 if __name__ == '__main__':
-    codigo = open('C:/Users/Mateu/Desktop/UTFPR-BCC/Compiladores/geracao-codigo-testes/gencode-005.tpp')
+    codigo = open('C:/Users/Mateu/Desktop/UTFPR-BCC/Compiladores/geracao-codigo-testes/gencode-002.tpp')
     #r = codigo.read()
     f = Semantica(codigo.read())
     print_tree(f.tree)

@@ -39,6 +39,7 @@ class Lexica(object):
         'MAIOREQ',
         'ATRIBUICAO',
         'ELOGICO',
+        'OULOGICO',
         'DIF',
         'ID',
         'NUM_FLUTUANTE',
@@ -70,6 +71,7 @@ class Lexica(object):
     t_MAIOREQ = r'\>='
     t_ATRIBUICAO = r'(\?<\!<|>|:|=)=(?!=)'
     t_ELOGICO = r'&&'
+    t_OULOGICO = r"\|\|"
     t_DIF = r'<>'
 
     # função que trata a quebra de linha
